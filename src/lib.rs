@@ -12,7 +12,7 @@ struct CompressorInput {
     length_in_bytes: u32,
 }
 
-extern {
+extern "C" {
     fn compress(input: *const CompressorInput, output: *mut DecompressorInput);
     fn decompress(input: *const DecompressorInput, output: *mut CompressorInput);
 }
@@ -29,7 +29,11 @@ pub fn refpack_compress(input: &mut [u8]) -> Vec<u8> {
         };
         compress(&mut input, &mut output);
         let cast_pointer = output.buffer as *mut u8;
-        Vec::from_raw_parts(cast_pointer, output.length_in_bytes as usize, output.length_in_bytes as usize)
+        Vec::from_raw_parts(
+            cast_pointer,
+            output.length_in_bytes as usize,
+            output.length_in_bytes as usize,
+        )
     }
 }
 
@@ -46,7 +50,11 @@ pub fn refpack_decompress(input: &mut [u8]) -> Vec<u8> {
         };
         decompress(&mut input, &mut output);
         let cast_pointer = output.buffer as *mut u8;
-        Vec::from_raw_parts(cast_pointer, output.length_in_bytes as usize, output.length_in_bytes as usize)
+        Vec::from_raw_parts(
+            cast_pointer,
+            output.length_in_bytes as usize,
+            output.length_in_bytes as usize,
+        )
     }
 }
 
@@ -64,4 +72,19 @@ mod tests {
         println!("decompressed: {decompressed:X?}");
     }
 
+    #[test]
+    fn decompress() {
+        let mut input = vec![
+            101, 0, 0, 0, 16, 251, 0, 0, 100, 137, 64, 0, 0, 224, 1, 0, 0, 2, 0, 6, 224, 2, 0, 1,
+            1, 0, 11, 224, 1, 0, 2, 1, 2, 15, 0, 3, 224, 0, 0, 3, 1, 2, 6, 0, 4, 224, 4, 0, 1, 2,
+            0, 29, 224, 2, 0, 3, 2, 0, 11, 224, 2, 0, 5, 0, 0, 2, 224, 1, 0, 5, 1, 2, 29, 0, 6,
+            224, 5, 0, 2, 2, 0, 8, 224, 1, 0, 7, 0, 0, 6, 225, 2, 0, 7, 1, 0, 8, 0, 0, 254, 7, 0,
+        ];
+
+        println!("input: {input:X?}");
+
+        let decompressed = refpack_decompress(&mut input);
+
+        println!("Decompressed: {decompressed:X?}");
+    }
 }
