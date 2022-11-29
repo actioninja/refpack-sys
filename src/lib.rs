@@ -17,6 +17,7 @@ extern "C" {
     fn decompress(input: *const DecompressorInput, output: *mut CompressorInput);
 }
 
+#[cfg(target_os = "windows")]
 pub fn refpack_compress(input: &mut [u8]) -> Vec<u8> {
     unsafe {
         let mut input = CompressorInput {
@@ -37,6 +38,12 @@ pub fn refpack_compress(input: &mut [u8]) -> Vec<u8> {
     }
 }
 
+#[cfg(not(target_os = "windows"))]
+pub fn refpack_compress(input: &mut [u8]) -> Vec<u8> {
+    input.to_vec()
+}
+
+#[cfg(target_os = "windows")]
 pub fn refpack_decompress(input: &mut [u8]) -> Vec<u8> {
     unsafe {
         let mut input = DecompressorInput {
@@ -56,6 +63,11 @@ pub fn refpack_decompress(input: &mut [u8]) -> Vec<u8> {
             output.length_in_bytes as usize,
         )
     }
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn refpack_decompress(input: &mut [u8]) -> Vec<u8> {
+    input.to_vec()
 }
 
 #[cfg(test)]
